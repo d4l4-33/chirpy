@@ -3,15 +3,32 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"sync/atomic"
 )
+
+type apiConfig struct {
+	fileserverHits atomic.Int32
+}
+
+func handleFileServer(filepathRoot string) http.Handler {
+
+	return http.StripPrefix("/app", http.FileServer(http.Dir(filepathRoot)))
+}
 
 func main() {
 	const filepathRoot = "."
 	const port = "8080"
 
+	apiCfg := &apiConfig{
+		fileserverHits: atomic.Int32{},
+	}
+
 	mux := http.NewServeMux()
-	mux.Handle("/app/", http.StripPrefix("/app", http.FileServer(http.Dir(filepathRoot))))
-	mux.HandleFunc("/healthz", handleReadiness)
+	mux.Handle("/app/", apiCfg.middlewareMetricsInc(handleFileServer(filepathRoot)))
+
+	mux.HandleFunc("GET /api/healthz", handleReadiness)
+	mux.HandleFunc("GET /api/metrics", apiCfg.handleMetrics)
+	mux.HandleFunc("POST /api/reset", apiCfg.handleReset)
 
 	srv := &http.Server{
 		Addr:    ":" + port,
@@ -22,12 +39,5 @@ func main() {
 	if err != nil {
 		fmt.Printf("Error starting server: %s", err)
 	}
-
-}
-
-func handleReadiness(w http.ResponseWriter, _ *http.Request) {
-
-	w.WriteHeader(200)
-	w.Write([]byte("OK"))
 
 }
