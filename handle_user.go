@@ -27,13 +27,13 @@ func (cfg *apiConfig) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 	params := parameters{}
 	err := decoder.Decode(&params)
 	if err != nil {
-		respondWithError(w, 400, "Error decoding request")
+		respondWithError(w, http.StatusInternalServerError, "Error decoding request")
 		return
 	}
 
 	dbUser, err := cfg.dbQueries.CreateUser(r.Context(), params.Email)
 	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("Error creating user: %s", err))
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error creating user: %s", err))
 		return
 	}
 
