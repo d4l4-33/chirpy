@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"net/http"
 	"testing"
 	"time"
 
@@ -122,4 +123,28 @@ func TestTimeoutError(t *testing.T) {
 	if err == nil {
 		t.Fail()
 	}
+}
+
+func TestBearerToken(t *testing.T) {
+	token := "fortyfiveandahalflitersofvodka"
+	header := http.Header{}
+	header.Add("Authorization", "Bearer "+token)
+
+	response, err := GetBearerToken(header)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if response != token {
+		t.Fail()
+	}
+}
+
+func TestBearerNotFound(t *testing.T) {
+	header := http.Header{}
+	_, err := GetBearerToken(header)
+	if err.Error() != "Bearer token not found" {
+		t.Fail()
+	}
+
 }

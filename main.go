@@ -16,6 +16,7 @@ type apiConfig struct {
 	fileserverHits atomic.Int32
 	dbQueries      *database.Queries
 	platform       string
+	secret         string
 }
 
 func handleFileServer(filepathRoot string) http.Handler {
@@ -39,6 +40,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	secret := os.Getenv("SECRET")
+	if secret == "" {
+		fmt.Println("Secret not set")
+		os.Exit(1)
+	}
+
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		fmt.Printf("Error opening database %s", err)
@@ -48,6 +55,7 @@ func main() {
 		fileserverHits: atomic.Int32{},
 		dbQueries:      database.New(db),
 		platform:       platform,
+		secret:         secret,
 	}
 
 	mux := http.NewServeMux()
@@ -59,6 +67,7 @@ func main() {
 
 	mux.HandleFunc("POST /api/users", apiCfg.handleCreateUser)
 	mux.HandleFunc("POST /api/login", apiCfg.handleLogin)
+	mux.HandleFunc("POST /api/login/{expires_in_seconds}", apiCfg.handleLogin)
 
 	mux.HandleFunc("POST /api/chirps", apiCfg.handleCreateChirp)
 	mux.HandleFunc("GET /api/chirps", apiCfg.handleGetChirps)
