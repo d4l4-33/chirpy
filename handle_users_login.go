@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/d4l4-33/chirpy/internal/auth"
+	"github.com/d4l4-33/chirpy/internal/database"
 )
 
 func (cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -26,15 +27,6 @@ func (cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if params.ExpiresInSeconds == 0 || params.ExpiresInSeconds > 3600 {
-		params.ExpiresInSeconds = 3600
-	}
-	parsedDuration, err := time.ParseDuration(fmt.Sprintf("%ds", params.ExpiresInSeconds))
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error parsing duration: %s", err))
-		return
-	}
-
 	user, err := cfg.dbQueries.GetUserByEmail(r.Context(), params.Email)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error retreving user: %s", err))
@@ -47,18 +39,38 @@ func (cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := auth.MakeJWT(user.ID, cfg.secret, parsedDuration)
+	tokenDuration, err := time.ParseDuration("1h")
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error parsing duration: %s", err))
+		return
+	}
+	token, err := auth.MakeJWT(user.ID, cfg.secret, tokenDuration)
 	if err != nil || token == "" {
 		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error creating token: %s", err))
 		return
 	}
 
-	respondWithJson(w, http.StatusOK, User{
-		ID:        user.ID,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-		Email:     user.Email,
-		Token:     token,
+	refreshToken, err := cfg.dbQueries.CreateToken(r.Context(), database.CreateTokenParams{
+		Token:     auth.MakeRefreshToken(),
+		UserID:    user.ID,
+		ExpiresAt: time.Now().AddDate(0, 0, 60),
 	})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error creating refresh token: %s", err))
+		return
+	}
+
+	err = respondWithJson(w, http.StatusOK, User{
+		ID:           user.ID,
+		CreatedAt:    user.CreatedAt,
+		UpdatedAt:    user.UpdatedAt,
+		Email:        user.Email,
+		Token:        token,
+		RefreshToken: refreshToken.Token,
+	})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprint(err))
+		return
+	}
 
 }

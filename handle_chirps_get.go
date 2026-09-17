@@ -38,7 +38,12 @@ func (cfg *apiConfig) handleGetChirps(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	respondWithJson(w, http.StatusOK, parsedChirps)
+	err = respondWithJson(w, http.StatusOK, parsedChirps)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprint(err))
+		return
+	}
+
 }
 
 func (cfg *apiConfig) handleGetChirpByID(w http.ResponseWriter, r *http.Request) {
@@ -56,11 +61,16 @@ func (cfg *apiConfig) handleGetChirpByID(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	respondWithJson(w, http.StatusOK, Chirp{
+	err = respondWithJson(w, http.StatusOK, Chirp{
 		ID:        dbChirp.ID,
 		CreatedAt: dbChirp.CreatedAt,
 		UpdatedAt: dbChirp.UpdatedAt,
 		Body:      dbChirp.Body,
 		UserID:    dbChirp.UserID,
 	})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprint(err))
+		return
+	}
+
 }

@@ -19,7 +19,6 @@ func (cfg *apiConfig) handleCreateChirp(w http.ResponseWriter, r *http.Request) 
 		respondWithError(w, http.StatusUnauthorized, "No token available")
 		return
 	}
-	//fmt.Println(tokenString)
 
 	userID, err := auth.ValidateJWT(tokenString, cfg.secret)
 	if err != nil {
@@ -55,13 +54,18 @@ func (cfg *apiConfig) handleCreateChirp(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	respondWithJson(w, http.StatusCreated, Chirp{
+	err = respondWithJson(w, http.StatusCreated, Chirp{
 		ID:        chirp.ID,
 		CreatedAt: chirp.CreatedAt,
 		UpdatedAt: chirp.UpdatedAt,
 		Body:      chirp.Body,
 		UserID:    chirp.UserID,
 	})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprint(err))
+		return
+	}
+
 }
 
 func validateChirp(body string) (string, error) {
