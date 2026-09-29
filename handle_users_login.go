@@ -69,7 +69,7 @@ func (cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 		RefreshToken: refreshToken.Token,
 	})
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, fmt.Sprint(err))
+		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 

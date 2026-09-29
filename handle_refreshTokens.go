@@ -35,10 +35,9 @@ func (cfg *apiConfig) handlerRefresh(w http.ResponseWriter, r *http.Request) {
 		Token: accesToken,
 	})
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, fmt.Sprint(err))
+		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-
 }
 
 func (cfg *apiConfig) handlerRevoke(w http.ResponseWriter, r *http.Request) {
@@ -59,8 +58,7 @@ func (cfg *apiConfig) handlerRevoke(w http.ResponseWriter, r *http.Request) {
 		Error: "",
 	})
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, fmt.Sprint(err))
+		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-
 }

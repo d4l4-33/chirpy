@@ -62,10 +62,9 @@ func (cfg *apiConfig) handleCreateChirp(w http.ResponseWriter, r *http.Request) 
 		UserID:    chirp.UserID,
 	})
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, fmt.Sprint(err))
+		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-
 }
 
 func validateChirp(body string) (string, error) {
@@ -83,5 +82,4 @@ func validateChirp(body string) (string, error) {
 		}
 	}
 	return strings.Join(splitBody, " "), nil
-
 }

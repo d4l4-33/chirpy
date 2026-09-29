@@ -69,8 +69,7 @@ func (cfg *apiConfig) handleGetChirpByID(w http.ResponseWriter, r *http.Request)
 		UserID:    dbChirp.UserID,
 	})
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, fmt.Sprint(err))
+		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-
 }

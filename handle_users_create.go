@@ -58,7 +58,7 @@ func (cfg *apiConfig) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 		Email:     dbUser.Email,
 	})
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, fmt.Sprint(err))
+		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
