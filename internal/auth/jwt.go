@@ -66,3 +66,12 @@ func GetBearerToken(headers http.Header) (string, error) {
 
 	return strings.Fields(val)[1], nil
 }
+
+func GetAPIKey(headers http.Header) (string, error) {
+	val := headers.Get("Authorization")
+	if val == "" {
+		return "", fmt.Errorf("Bearer not found")
+	}
+
+	return strings.Fields(val)[1], nil
+}

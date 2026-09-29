@@ -17,6 +17,7 @@ type apiConfig struct {
 	dbQueries      *database.Queries
 	platform       string
 	secret         string
+	polkaKey       string
 }
 
 func handleFileServer(filepathRoot string) http.Handler {
@@ -46,6 +47,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	polkaKey := os.Getenv("POLKAKEY")
+	if polkaKey == "" {
+		fmt.Println("Polka key not set")
+		os.Exit(1)
+	}
+
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		fmt.Printf("Error opening database %s", err)
@@ -56,6 +63,7 @@ func main() {
 		dbQueries:      database.New(db),
 		platform:       platform,
 		secret:         secret,
+		polkaKey:       polkaKey,
 	}
 
 	mux := http.NewServeMux()
@@ -67,15 +75,19 @@ func main() {
 
 	mux.HandleFunc("POST /api/users", apiCfg.handleCreateUser)
 	mux.HandleFunc("PUT /api/users", apiCfg.handleUpdateUser)
+
 	mux.HandleFunc("POST /api/login", apiCfg.handleLogin)
 
 	mux.HandleFunc("POST /api/chirps", apiCfg.handleCreateChirp)
-	mux.HandleFunc("GET /api/chirps", apiCfg.handleGetChirps)
+
+	mux.HandleFunc("GET /api/chirps/", apiCfg.handleGetChirps)
 	mux.HandleFunc("GET /api/chirps/{chirpID}", apiCfg.handleGetChirpByID)
 	mux.HandleFunc("DELETE /api/chirps/{chirpID}", apiCfg.handleDeleteChirp)
 
 	mux.HandleFunc("POST /api/refresh", apiCfg.handlerRefresh)
 	mux.HandleFunc("POST /api/revoke", apiCfg.handlerRevoke)
+
+	mux.HandleFunc("POST /api/polka/webhooks", apiCfg.handleWebhooks)
 
 	srv := &http.Server{
 		Addr:    ":" + port,

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/d4l4-33/chirpy/internal/database"
 	"github.com/google/uuid"
 )
 
@@ -19,11 +20,30 @@ type Chirp struct {
 func (cfg *apiConfig) handleGetChirps(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	dbChirps, err := cfg.dbQueries.GetChirps(r.Context())
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error retrieving chirps: %s", err))
-		return
+	var dbChirpsPtr = &[]database.Chirp{}
+	var err error
+
+	val := r.URL.Query().Get("author_id")
+	if val == "" {
+		*dbChirpsPtr, err = cfg.dbQueries.GetChirps(r.Context())
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error retrieving chirps: %s", err))
+			return
+		}
+	} else {
+		author_id, err := uuid.Parse(val)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, "Error parsing input")
+			return
+		}
+		*dbChirpsPtr, err = cfg.dbQueries.GetChirpsByID(r.Context(), author_id)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error retrieving chirps from user: %s", err))
+			return
+		}
 	}
+
+	dbChirps := *dbChirpsPtr
 
 	parsedChirps := []Chirp{}
 	if len(dbChirps) != 0 {
