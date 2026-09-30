@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/d4l4-33/chirpy/internal/auth"
+	"github.com/primusprag/chirpy/internal/auth"
 	"github.com/google/uuid"
 )
 

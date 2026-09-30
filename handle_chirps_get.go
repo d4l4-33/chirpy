@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/d4l4-33/chirpy/internal/database"
+	"github.com/primusprag/chirpy/internal/database"
 	"github.com/google/uuid"
 )
 

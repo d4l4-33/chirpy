@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/d4l4-33/chirpy/internal/auth"
-	"github.com/d4l4-33/chirpy/internal/database"
+	"github.com/primusprag/chirpy/internal/auth"
+	"github.com/primusprag/chirpy/internal/database"
 )
 
 func (cfg *apiConfig) handleUpdateUser(w http.ResponseWriter, r *http.Request) {

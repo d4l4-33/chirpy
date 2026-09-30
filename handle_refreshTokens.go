@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/d4l4-33/chirpy/internal/auth"
+	"github.com/primusprag/chirpy/internal/auth"
 )
 
 func (cfg *apiConfig) handlerRefresh(w http.ResponseWriter, r *http.Request) {
