@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/d4l4-33/chirpy/internal/database"
@@ -23,20 +24,34 @@ func (cfg *apiConfig) handleGetChirps(w http.ResponseWriter, r *http.Request) {
 	var dbChirpsPtr = &[]database.Chirp{}
 	var err error
 
-	val := r.URL.Query().Get("author_id")
-	if val == "" {
-		*dbChirpsPtr, err = cfg.dbQueries.GetChirps(r.Context())
+	sort_desc := false
+	sort_val := strings.ToLower(r.URL.Query().Get("sort"))
+	if sort_val == "desc" {
+		sort_desc = true
+	}
+	auth_val := r.URL.Query().Get("author_id")
+
+	if auth_val == "" {
+		if sort_desc {
+			*dbChirpsPtr, err = cfg.dbQueries.GetChirpsDESC(r.Context())
+		} else {
+			*dbChirpsPtr, err = cfg.dbQueries.GetChirpsASC(r.Context())
+		}
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error retrieving chirps: %s", err))
 			return
 		}
 	} else {
-		author_id, err := uuid.Parse(val)
+		author_id, err := uuid.Parse(auth_val)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, "Error parsing input")
 			return
 		}
-		*dbChirpsPtr, err = cfg.dbQueries.GetChirpsByID(r.Context(), author_id)
+		if sort_desc {
+			*dbChirpsPtr, err = cfg.dbQueries.GetChirpsByIdDESC(r.Context(), author_id)
+		} else {
+			*dbChirpsPtr, err = cfg.dbQueries.GetChirpsByIdASC(r.Context(), author_id)
+		}
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error retrieving chirps from user: %s", err))
 			return
