@@ -8,10 +8,6 @@ I have used [PostgreSQL](https://www.postgresql.org/), [goose](https://github.co
 ## Summary
 The project simulates an HTTP Server by running the server and database on the local machine. The authentication is done by [argon2id](https://github.com/alexedwards/argon2id) using a secret key in an .env file.
 
-## Installation
-Install the 
-
-
 ## Quickstart
 Clone the repo:
 ```
@@ -21,7 +17,9 @@ git clone https://github.com/primusprag/chirpy
 You then need to create a .env file in your working folder, it should have the following variables:
 
 DB_URL=postgres://postgres:postgres@localhost:5432/chirpy?sslmode=disable *or other database url*
+
 PLATFORM=`dev`
+
 SECRET= a 64 bit random string, you can use following in your terminal:
 ```
 openssl rand -base64 64
